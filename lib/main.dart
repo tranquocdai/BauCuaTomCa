@@ -1,5 +1,7 @@
+import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-
+import 'package:shake_event/shake_event.dart';
 void main() {
   runApp(MyApp());
 }
@@ -10,18 +12,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
+      theme:
+          ThemeData(primarySwatch: Colors.blue, backgroundColor: Colors.white),
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
@@ -29,85 +21,178 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+class _MyHomePageState extends State<MyHomePage>
+    with ShakeHandler, SingleTickerProviderStateMixin {
+  var dice1 = 0;
+  var dice2 = 0;
+  bool hiden=true;
+  bool selected = false;
+  static AudioCache cache = AudioCache();
+  List<String> dices = ["dice1.png","dice2.png","dice3.png","dice4.png","dice5.png","dice6.png"];
+  @override
+  void initState() {
+    startListeningShake(10); //20 is the default threshold value for the shake event
+    super.initState();
   }
 
   @override
+  void dispose() {
+    resetShakeListeners();
+    super.dispose();
+  }
+
+  @override
+  shakeEventListener() {
+    //DO ACTIONS HERE
+    if (selected == false) {
+      playLocal();
+      dice1 = (new Random().nextInt(5) + 0);
+      dice2 = (new Random().nextInt(5) + 0);
+    }
+    return super.shakeEventListener();
+  }
+  playLocal() async {
+    await cache.play('mp3/shakingsound.mp3',mode: PlayerMode.LOW_LATENCY);
+  }
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final key = new GlobalKey();
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          final dynamic tooltip = key.currentState;
+          tooltip.ensureTooltipVisible();
+        },
+          child: Tooltip(
+            key: key,
+            child: Icon(Icons.wb_incandescent_outlined),
+            message: "Shake your phone to change score of dices",
+          ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+      body: SafeArea(
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 50,bottom: 20),
+                child: Text("DICE GAME",style: TextStyle(fontSize: 50)),
+              ),
+              Text((hiden==false)?(dice1+dice2+2).toString()+"":"",style: TextStyle(fontSize: 20)),
+              Text((hiden==false)?(((dice2+dice1+2)%2==0)?"Even":"Odd"):"",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.red),),
+              Stack(
+                alignment: Alignment.center,
+                overflow: Overflow.visible,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/images/hop.jpg"),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                      left: 80,
+                      top: 80,
+                      child: Container(
+                        child: Image(
+                          image: getimage(dice1, dices),
+                          height: 30,
+                          width: 30,
+                        ),
+                      )),
+                  Positioned(
+                    left: 105,
+                      top: 95,
+                      child: Container(
+                    child: Image(
+                      image: getimage(dice2, dices),
+                      height: 30,
+                      width: 30,
+                    ),
+                  )),
+                  AnimatedPositioned(
+                    width: selected ? 150 : 150,
+                    height: selected ? 150 : 150,
+                    top: selected ? -1 : 31.0,
+                    left: selected ? -70 : 33.0,
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.fastOutSlowIn,
+                    onEnd: (){setState(() {
+                      if(selected)hiden=false;
+                      else hiden=true;
+                    });},
+                    child: GestureDetector(
+                      onTap: () {
+
+                      },
+                      child: Container(
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage("assets/images/nap.png"),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 150,
+                height: 50,
+                margin: EdgeInsets.only(top: 10,bottom: 10),
+                child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)
+                    ),
+                    color: Colors.cyan,
+                    onPressed: () {
+                      setState(() {
+                        selected = true;
+                      });
+                    },
+                    child: Text("open",style: TextStyle(fontSize: 30),)),
+              ),
+              Container(
+                width: 150,
+                height: 50,
+                  margin: EdgeInsets.only(top: 10,bottom: 10),
+                child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15)
+                    ),
+                    color: Colors.cyan,
+                    onPressed: () {
+                      setState(() {
+                        selected = false;
+                        hiden=true;
+                      });
+                    },
+                    child: Text("close",style: TextStyle(fontSize: 30)))
+              ),
+
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+  ImageProvider getimage(int number,List<String> img){
+    return AssetImage("assets/images/"+img[number]);
   }
 }
