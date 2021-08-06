@@ -52,8 +52,8 @@ class _MyHomePageState extends State<MyHomePage>
     //DO ACTIONS HERE
     if (selected == false) {
       playLocal();
-      dice1 = (new Random().nextInt(5) + 0);
-      dice2 = (new Random().nextInt(5) + 0);
+      dice1 = (new Random().nextInt(6) + 0);
+      dice2 = (new Random().nextInt(6) + 0);
     }
     return super.shakeEventListener();
   }
