@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:shake_event/shake_event.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -31,13 +32,22 @@ class _MyHomePageState extends State<MyHomePage>
     with ShakeHandler, SingleTickerProviderStateMixin {
   var dice1 = 0;
   var dice2 = 0;
-  bool hiden=true;
+  var dice3 = 0;
+  bool hiden = true;
   bool selected = false;
   static AudioCache cache = AudioCache();
-  List<String> dices = ["dice1.png","dice2.png","dice3.png","dice4.png","dice5.png","dice6.png"];
+  List<String> dices = [
+        "1.jpg",
+    "2.jpg",
+    "3.jpg",
+    "4.jpg",
+    "5.jpg",
+    "6.jpg"
+  ];
   @override
   void initState() {
-    startListeningShake(10); //20 is the default threshold value for the shake event
+    startListeningShake(
+        10); //20 is the default threshold value for the shake event
     super.initState();
   }
 
@@ -54,26 +64,29 @@ class _MyHomePageState extends State<MyHomePage>
       playLocal();
       dice1 = (new Random().nextInt(6) + 0);
       dice2 = (new Random().nextInt(6) + 0);
+      dice3 = (new Random().nextInt(6) + 0);
     }
     return super.shakeEventListener();
   }
+
   playLocal() async {
-    await cache.play('mp3/shakingsound.mp3',mode: PlayerMode.LOW_LATENCY);
+    await cache.play('mp3/shakingsound.mp3', mode: PlayerMode.LOW_LATENCY);
   }
+
   @override
   Widget build(BuildContext context) {
     final key = new GlobalKey();
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: (){
+        onPressed: () {
           final dynamic tooltip = key.currentState;
           tooltip.ensureTooltipVisible();
         },
-          child: Tooltip(
-            key: key,
-            child: Icon(Icons.wb_incandescent_outlined),
-            message: "Shake your phone to change score of dices",
-          ),
+        child: Tooltip(
+          key: key,
+          child: Icon(Icons.wb_incandescent_outlined),
+          message: "Shake your phone to change score of dices",
+        ),
       ),
       body: SafeArea(
         child: Container(
@@ -84,18 +97,16 @@ class _MyHomePageState extends State<MyHomePage>
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Container(
-                padding: EdgeInsets.only(top: 50,bottom: 20),
-                child: Text("DICE GAME",style: TextStyle(fontSize: 50)),
+                padding: EdgeInsets.only(top: 50, bottom: 20),
+                child: Text("BẦU CUA TÔM CÁ HƯƠU GÀ",textAlign: TextAlign.center, style: TextStyle(fontSize: 50)),
               ),
-              Text((hiden==false)?(dice1+dice2+2).toString()+"":"",style: TextStyle(fontSize: 20)),
-              Text((hiden==false)?(((dice2+dice1+2)%2==0)?"Even":"Odd"):"",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.red),),
               Stack(
                 alignment: Alignment.center,
                 overflow: Overflow.visible,
                 children: [
                   Container(
-                    height: 200,
-                    width: 200,
+                    height: 300,
+                    width: 300,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage("assets/images/hop.jpg"),
@@ -103,44 +114,29 @@ class _MyHomePageState extends State<MyHomePage>
                       ),
                     ),
                   ),
-                  Positioned(
-                      left: 80,
-                      top: 80,
-                      child: Container(
-                        child: Image(
-                          image: getimage(dice1, dices),
-                          height: 30,
-                          width: 30,
-                        ),
-                      )),
-                  Positioned(
-                    left: 105,
-                      top: 95,
-                      child: Container(
-                    child: Image(
-                      image: getimage(dice2, dices),
-                      height: 30,
-                      width: 30,
-                    ),
-                  )),
+                  createDice(100, 120, 2, dice1),
+                  createDice(158, 110, 4, dice2),
+                  createDice(135, 170, 25, dice3),
                   AnimatedPositioned(
-                    width: selected ? 150 : 150,
-                    height: selected ? 150 : 150,
-                    top: selected ? -1 : 31.0,
-                    left: selected ? -70 : 33.0,
+                    width: selected ? 220 : 220,
+                    height: selected ? 220 : 220,
+                    top: selected ? -30 : 50.0,
+                    left: selected ? -110 : 50.0,
                     duration: const Duration(seconds: 1),
                     curve: Curves.fastOutSlowIn,
-                    onEnd: (){setState(() {
-                      if(selected)hiden=false;
-                      else hiden=true;
-                    });},
+                    onEnd: () {
+                      setState(() {
+                        if (selected)
+                          hiden = false;
+                        else
+                          hiden = true;
+                      });
+                    },
                     child: GestureDetector(
-                      onTap: () {
-
-                      },
+                      onTap: () {},
                       child: Container(
-                        height: 150,
-                        width: 150,
+                        height: 300,
+                        width: 300,
                         decoration: BoxDecoration(
                           image: DecorationImage(
                             image: AssetImage("assets/images/nap.png"),
@@ -155,44 +151,66 @@ class _MyHomePageState extends State<MyHomePage>
               Container(
                 width: 150,
                 height: 50,
-                margin: EdgeInsets.only(top: 10,bottom: 10),
+                margin: EdgeInsets.only(top: 10, bottom: 10),
                 child: FlatButton(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)
-                    ),
+                        borderRadius: BorderRadius.circular(15)),
                     color: Colors.cyan,
                     onPressed: () {
                       setState(() {
                         selected = true;
                       });
                     },
-                    child: Text("open",style: TextStyle(fontSize: 30),)),
+                    child: Text(
+                      "open",
+                      style: TextStyle(fontSize: 30),
+                    )),
               ),
               Container(
-                width: 150,
-                height: 50,
-                  margin: EdgeInsets.only(top: 10,bottom: 10),
-                child: FlatButton(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)
-                    ),
-                    color: Colors.cyan,
-                    onPressed: () {
-                      setState(() {
-                        selected = false;
-                        hiden=true;
-                      });
-                    },
-                    child: Text("close",style: TextStyle(fontSize: 30)))
-              ),
-
+                  width: 150,
+                  height: 50,
+                  margin: EdgeInsets.only(top: 10, bottom: 10),
+                  child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      color: Colors.cyan,
+                      onPressed: () {
+                        setState(() {
+                          selected = false;
+                          hiden = true;
+                        });
+                      },
+                      child: Text("close", style: TextStyle(fontSize: 30)))),
             ],
           ),
         ),
       ),
     );
   }
-  ImageProvider getimage(int number,List<String> img){
-    return AssetImage("assets/images/"+img[number]);
+
+  ImageProvider getimage(int number, List<String> img) {
+    return AssetImage("assets/images/" + img[number]);
+  }
+  Positioned createDice(double left, double top, double angle,int number){
+    return Positioned(
+        left: left,
+        top: top,
+        child: Transform.rotate(
+          angle: angle,
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(width: 2),
+                borderRadius: BorderRadius.all(Radius.circular(10))
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: Image(
+                image: getimage(number, dices),
+                height: 50,
+                width: 50,
+              ),
+            ),
+          ),
+        ));
   }
 }
